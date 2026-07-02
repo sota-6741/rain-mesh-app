@@ -34,10 +34,14 @@ ADR-0001 で外部データソースの抽象化(port / infrastructure)は決定
 ### value object はリッチに、ドメインサービスは薄く(貧血ドメインモデルの回避)
 
 - value object は **immutable かつ自己検証**とする(生成時に不変条件を強制。
-  例: `CellSize` は 2km 下限を強制、`RainValue` は負値を弾く)
+  例: `TileId` は x/y をタイル数 `2^z` の範囲に強制、`RainValue` は負値を弾く)
 - **単一オブジェクトの性質・振る舞いは、そのオブジェクトのメソッドに置く**
-  (例: `ZoomLevel.cell_size`、`Cell.max_value()`)。これらを builder / resolver
-  側に吸い上げると value object がデータ袋化し、貧血ドメインモデルに陥る
+  (例: `TileId.from_coordinate()`)。これらを builder / resolver 側に吸い上げると
+  value object がデータ袋化し、貧血ドメインモデルに陥る
+- 固定グリッドは XYZ タイル準拠とし(ADR-0001)、セルサイズはタイル(z+緯度)から
+  一意に導出できるため専用フィールドや km 固定マップは持たない(必要になった消費者側で
+  算出する。YAGNI)。「2km より細かくしない」下限は `ZoomLevel.tile_zoom` の
+  タイルズーム上限(緯度35°付近で1タイル≒2km となるズーム14)で担保する
 - `MeshBuilder` / `RainValueResolver` 等のドメインサービスは、**複数オブジェクトに
   またがり単一オブジェクトに属せない横断ロジックに限定**し、薄く保つ
 - ただしシリアライズ・DTO 変換・JSON スキーマは domain に持ち込まない
@@ -71,8 +75,8 @@ app/
     mesh/
       builder.py            # MeshBuilder(振る舞い・feature 直下)
       value_object/
-        grid.py             # MeshGrid
-        zoom.py             # ZoomLevel, CellSize
+        grid.py             # TileId, MeshGrid
+        zoom.py             # ZoomLevel
     rain/
       resolver.py           # RainValueResolver
       value_object/
