@@ -59,11 +59,12 @@
 
 ## 結果
 
-- `app/domain/services/mesh_builder.py`: 擬似メッシュ生成・セル値割り当てを実装
-- `app/domain/services/zoom_config.py`: ズームレベル→セルサイズのマッピングを保持
-- `app/infrastructure/weather/jma_amedas_provider.py` / `yolp_provider.py` を実装
-- `apscheduler_runner.py` を「10分毎の気象庁全国一括取得」用途で使用する
-- セル単位キャッシュの実装が両エンドポイントの前提になる。この設計は旧ADR
-  (250mメッシュ時代)のタイル単位キャッシュと同型であり、設計思想を再利用する
-- 実測値/解析値の由来区別が、スキーマ(`rain_schema.py`)とFE表示の両方に必要になる
+この決定により、以下の設計上の制約が確定する:
+
+- 擬似メッシュ生成・ズームレベル→セルサイズのマッピング・セル値割り当てを担う
+  ドメインロジックが必要になる
+- 気象庁アメダス(一括取得・定期更新)とYOLP(地点ごと・オンデマンド)の
+  2プロバイダーを抽象化するインターフェースが必要になる
+- セル単位キャッシュ(TTL 10分)が mesh / timeseries 双方の前提となる
+- レスポンスに実測値/解析値の由来区分を含める必要がある(FE 表示との契約)
 - 詳細仕様・未確定事項は `apps/api/docs/mesh-timeseries-spec.md` で管理する
