@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from math import cos, floor, log, pi, tan
 
 from domain.geo.value_object.coordinate import Coordinate
+from domain.rain.value_object.value import CellRainValue
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,3 +52,11 @@ class MeshGrid:
             raise ValueError("tiles は空でないこと")
         if any(tile.zoom_level != self.zoom_level for tile in self.tiles):
             raise ValueError("全タイルの zoom_level が一致すること")
+
+
+@dataclass(frozen=True, slots=True)
+class MeshCell:
+    """雨量値が確定した1セル(タイル + 雨量値)。"""
+
+    tile: TileId
+    rain_value: CellRainValue
