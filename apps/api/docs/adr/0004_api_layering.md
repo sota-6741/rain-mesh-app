@@ -2,7 +2,7 @@
 
 ## ステータス
 
-承認済み (2026-07-02)
+承認済み (2026-07-02、2026-07-07 rain/station 実装に伴いポート分割を追記)
 
 ## コンテキスト
 
@@ -75,19 +75,20 @@ app/
     mesh/
       builder.py            # MeshBuilder(振る舞い・feature 直下)
       value_object/
-        grid.py             # TileId, MeshGrid
+        grid.py             # TileId, MeshGrid, MeshCell
         zoom.py             # ZoomLevel
     rain/
       resolver.py           # RainValueResolver
       value_object/
-        value.py            # RainValue, Provenance
+        value.py            # RainValue, Provenance, CellRainValue
     station/
       nearest.py            # NearestStationPolicy
       value_object/
         station.py          # Station(参照データ → VO)
     shared/
       interface/
-        weather_provider.py # feature 横断の port のみ
+        amedas_observation_provider.py  # AmedasObservationProvider(port)
+        analyzed_rain_value_provider.py # AnalyzedRainValueProvider(port)
   application/
     get_mesh.py             # GetMesh(ユースケース)
     get_timeseries.py
@@ -95,7 +96,12 @@ app/
 
 補足:
 - feature 固有の port が出てきたら、そのときだけ `mesh/interface/` のように
-  feature 内に置く。横断 port(現状 `WeatherProvider` のみ)は `shared/interface/`
+  feature 内に置く。横断 port(現状 `AmedasObservationProvider` /
+  `AnalyzedRainValueProvider` の2つ)は `shared/interface/`
+- 気象庁アメダス(観測所一覧の一括取得)と YOLP(タイル単位のオンデマンド取得)は
+  呼び出し形状が根本的に異なる(バルク取得 vs 単発取得)ため、単一の
+  `WeatherProvider` にまとめず提供元ごとに port を分ける。呼び出し側
+  (application)は用途に応じて必要な port のみに依存できる
 - サブフォルダは中身が 2 ファイル以上になる段階で切る。1 ファイルのために
   フォルダを作らない(過剰なネストの回避)。`shared/` も第2の受け皿になりやすい
   ため、本当に複数 feature で共有するものだけに限定する
